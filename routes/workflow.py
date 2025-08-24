@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import List, Dict, Any
 import uuid
+from fastapi.encoders import jsonable_encoder
 from sqlalchemy import select
 from scheemas.workflowschema import WorkflowCreate,NodesRequest
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -37,10 +38,12 @@ async def create_workflow(workflow: WorkflowCreate, db: AsyncSession = Depends(g
 
     return {"status": "success", "workflow": new_workflow}
 
-
-# Route 2: Update workflow with nodes and graph
-@workflowrouter.put("/{workflow_id}")
-async def update_workflow_nodes(workflow_id: str, update: NodesRequest, db: AsyncSession = Depends(get_db)):
+@workflowrouter.post("/{workflow_id}")
+async def update_workflow_nodes(
+    workflow_id: str,
+    update: NodesRequest,
+    db: AsyncSession = Depends(get_db)
+):
     # fetch user
     result = await db.execute(select(User).where(User.email == update.email))
     user = result.scalar_one_or_none()
@@ -56,11 +59,14 @@ async def update_workflow_nodes(workflow_id: str, update: NodesRequest, db: Asyn
     if not workflow:
         raise HTTPException(status_code=404, detail="Workflow not found or access denied")
 
+    # convert Pydantic -> dict
+    update_json = jsonable_encoder(update)
+
     # update fields
     if update.name:
         workflow.name = update.name
-    workflow.data = update.nodes
-    workflow.graph = update.graph
+    workflow.data = update_json["nodes"]   #  list[dict]
+    workflow.graph = update_json["edges"]  #  list[dict]
 
     await db.commit()
     await db.refresh(workflow)

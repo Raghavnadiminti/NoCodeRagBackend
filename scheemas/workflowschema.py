@@ -4,7 +4,12 @@ from typing import Dict, Any, List,Optional
 class Position(BaseModel):
     x: float
     y: float
-
+class Edge(BaseModel):
+    id: str
+    source: str
+    target: str
+    sourceHandle: Optional[str]
+    targetHandle: Optional[str]
 class Node(BaseModel):
     id: str
     type: str
@@ -13,14 +18,16 @@ class Node(BaseModel):
 
 class NodesRequest(BaseModel):
     nodes: List[Node]
-    edges:Optional[Dict[str,Any]]
+    edges:Optional[List[Edge]]
     email:str 
     name:str
 
 class WorkflowCreate(BaseModel):
     name: str
     description: str
-    email: str  
+    email: str 
+
+ 
 
 def verify_nodes(request: NodesRequest) -> bool:
     for node in request.nodes:
