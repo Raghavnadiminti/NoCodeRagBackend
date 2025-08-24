@@ -12,7 +12,7 @@ class Knowledge(Base):
 
     name = Column(String, nullable=False)
     pdfId = Column(String, nullable=False)
-    data = Column(LargeBinary, nullable=False)
+    data = Column(LargeBinary, nullable=True)
 
     # relationships
     user = relationship("User", back_populates="knowledges")

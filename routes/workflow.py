@@ -11,7 +11,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from dbconfig.database import get_db
 from models.Workflow_model import Workflow
 from models.User_model import User # make sure User model exists
-
+from fastapi import  UploadFile, File, Form
+from utils.uploadpdf import get_user_collection,store_pdf_in_chroma
 workflowrouter = APIRouter(prefix="/workflow", tags=["workflow"])
 
 
@@ -38,6 +39,37 @@ async def create_workflow(workflow: WorkflowCreate, db: AsyncSession = Depends(g
 
     return {"status": "success", "workflow": new_workflow}
 
+@workflowrouter.post("/uploadpdf")
+async def uploadpdf(email: str = Form(...),
+    workflow_id: str = Form(...),
+    file: UploadFile = File(...),db: AsyncSession = Depends(get_db)):
+
+    result = await db.execute(select(User).where(User.email ==email))
+    user = result.scalar_one_or_none()
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    result = await db.execute(
+        select(Workflow).where(Workflow.id == workflow_id, Workflow.user_id == user.id)
+    )
+    workflow = result.scalar_one_or_none()
+
+    if not workflow:
+        raise HTTPException(status_code=404, detail="Workflow not found or access denied")
+    
+    res=await store_pdf_in_chroma(user.id,workflow_id,file)
+
+    return res
+
+    
+
+    
+
+
+
+
+    return 
 @workflowrouter.post("/{workflow_id}")
 async def update_workflow_nodes(
     workflow_id: str,

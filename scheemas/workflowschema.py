@@ -27,6 +27,7 @@ class WorkflowCreate(BaseModel):
     description: str
     email: str 
 
+
  
 
 def verify_nodes(request: NodesRequest) -> bool:
