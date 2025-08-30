@@ -9,10 +9,8 @@ class Knowledge(Base):
     id = Column(String, primary_key=True, nullable=False)
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
     workflow_id = Column(String, ForeignKey("workflows.id", ondelete="CASCADE"))
-
-    name = Column(String, nullable=False)
     pdfId = Column(String, nullable=False)
-    data = Column(LargeBinary, nullable=True)
+
 
     # relationships
     user = relationship("User", back_populates="knowledges")

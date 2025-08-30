@@ -10,9 +10,7 @@ from serpapi import GoogleSearch
 from langchain.chains import RetrievalQA
 CHROMA_PATH = "chroma_db"
 def get_embeddings(model_name: str = "all-MiniLM-L6-v2"):
-   
-    
-        # For local sentence-transformers
+
     return SentenceTransformerEmbeddings(model_name=model_name)
 embeddings=get_embeddings()
 
@@ -52,7 +50,7 @@ async def store_pdf_in_chroma(user_id: str, workflow_id: str, file: UploadFile):
     db = get_user_collection(user_id)
     db.add_documents(chunks)
     db.persist()
-
+    # print("hloo",chunks)
     # cleanup
     os.remove(temp_path)
 
@@ -66,7 +64,7 @@ def get_gemini_llm(model_name: str, api_key: str, temperature: float = 0):
         temperature=temperature
     )
 
-def retrieve_by_workflow(user_id: str, workflow_id: str, query: str, k: int = 3):
+def retrieve_by_workflow(user_id: str, workflow_id: str, query: str,doc_id:str, k: int = 3):
 
     # Load user's collection
     db = get_user_collection(user_id)
@@ -74,7 +72,7 @@ def retrieve_by_workflow(user_id: str, workflow_id: str, query: str, k: int = 3)
     # Create a retriever that filters by metadata
     retriever = db.as_retriever(search_kwargs={
         "k": k,
-        "filter": {"workflow_id": workflow_id}  # filter by workflow_id in metadata
+        "filter": {"workflow_id": workflow_id,"doc_id":doc_id}  # filter by workflow_id in metadata
     })
 
     # Initialize LLM
