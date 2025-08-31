@@ -9,4 +9,4 @@ class UserCreate(BaseModel):
 
 class UserLogin(BaseModel):
     email:str 
-    pasword:str
+    password:str

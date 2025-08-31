@@ -54,7 +54,7 @@ def get_pdfs(user_id: str, workflow_id: str,  k=3):
         where={"workflow_id": workflow_id},   # metadata filter
      
     )
-    print(results)
+
     # Return docs and metadata
     pdfs = []
     for doc, meta in zip(results["documents"], results["metadatas"]):
@@ -74,7 +74,7 @@ def execute(data: dict,workflow_id:str,user_id:str):
     # Must have model + api key
     if "model" not in data or "model_api_key" not in data:
         return {"error": "Missing model or API key"}
-    print(data)
+
     # Setup LLM
     llm = get_gemini_llm(
         model_name=data["model"],
@@ -99,7 +99,7 @@ def execute(data: dict,workflow_id:str,user_id:str):
     # if "serp_api_key" in data:
     #     # dummy integration point, you can plug in serpapi client
     #     response_context.append({"serp_search": f"Search would run with key {data['serp_api_key']} and query {query}"})
-    print(response_context)
+
     # 3. Generate LLM response
     final_prompt = data.get("prompt", "") + "\n" + query + "\nContext: " + str(response_context)
     llm_response = llm.invoke(final_prompt)

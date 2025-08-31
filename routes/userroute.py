@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from dbconfig.database import get_db
 from models.User_model import User
+from models.Workflow_model import Workflow
 from scheemas.user_auth import UserCreate, UserLogin
 
 router = APIRouter(
@@ -47,3 +48,23 @@ async def login(user: UserLogin, db: AsyncSession = Depends(get_db)):
         return {"success": False, "message": "Invalid email or password"}
     
     return {"success": True, "message": {"email": db_user.email}}
+
+
+@router.get("/workflows/")
+async def get_workflows(email:str, db: AsyncSession = Depends(get_db)):
+        
+        result = await db.execute(select(User).where(User.email == email))
+        user = result.scalar_one_or_none()
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        # find workflow
+        result = await db.execute(
+            select(Workflow).where(
+               Workflow.user_id == user.id
+            )
+        )
+        workflow = result.scalars().all()
+        if not workflow:
+            raise HTTPException(status_code=404, detail="Workflow not found or access denied")
+        return workflow
